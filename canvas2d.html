@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cylinder effect</title>
+    <script src="javascripts/jquery-1.5.1.js"></script>
+    <script src="javascripts/jquery.xcolor.js"></script>
+    <link rel="stylesheet" href="stylesheets/demo.css"/>
+</head>
+<body>
+<div class="main">
+    <h1>More bars in Canvas</h1>
+
+    <div class="canvasContainer">
+        <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+    <a class="next" href="webgl/webgl.html">Next</a>
+    <a class="prev" href="gallery.html">Prev</a>
+
+</div>
+<script type="text/javascript">
+
+    var context = document.getElementById('canvas').getContext('2d');
+
+    var cylinder = {width: 30, height: 100};
+
+    var x = -cylinder.width / 2;
+    var y = -cylinder.height / 2;
+    var baseColor = "#c00";
+
+    var data = [
+        {lang: "Gauteng", count: 523},
+        {lang: "Western Cape", count: 372},
+        {lang: "KZN", count: 10},
+        {lang: "Eastern Cape", count: 7},
+        {lang: "North West",count: 2},
+        {lang: "Mpumalanga", count: 1},
+        {lang: "Free State",count: 0},
+        {lang: "Limpopo",count: 0},
+        {lang: "Northern Cape", count: 0}
+    ];
+
+    var plotArea = {
+        x1: 40, y1: 60, x2: 600, y2: 440,
+        width: function() { return this.x2 - this.x1 },
+        height: function() { return this.y2 - this.y1 }
+    };
+
+    var gap = 15;
+    var bars = $.map(data, function(d, i) {
+        return {
+            width: function() { return (plotArea.width() / data.length) - gap },
+            height: function() { return d.count / 486 * plotArea.height() },
+            x: function() { return plotArea.x1 + gap + (this.width() + gap) * i },
+            y: function() { return plotArea.y2 - this.height() },
+            data: d
+        }
+    });
+
+    var tick = 0;
+    var timer = 0;
+
+    function draw() {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+        context.save();
+//        context.scale(1 - tick / 360, 1 - tick / 360);
+
+        $.each(bars, function(i, bar) {
+            var gradient = context.createLinearGradient(bar.x(), bar.y(), bar.x() + bar.width(), bar.y());
+            gradient.addColorStop(0, baseColor);
+            gradient.addColorStop(0.25, $.xcolor.lighten(baseColor, 1));
+            gradient.addColorStop(0.5, baseColor);
+            gradient.addColorStop(0.75, $.xcolor.darken(baseColor, 0.5));
+            gradient.addColorStop(1, baseColor);
+
+            context.fillStyle = gradient;
+            context.fillRect(bar.x(), bar.y(), bar.width(), bar.height());
+
+            var labelWidth = context.measureText(bar.data.lang).width;
+            context.fillStyle = "black";
+            context.fillText(bar.data.lang, bar.x() + (bar.width() - labelWidth) / 2, bar.y() + bar.height() + 10);
+        });
+
+        console.log("Tick");
+
+        context.restore();
+
+        if (tick++ > 360) {
+            clearInterval(timer);
+            context.scale(1, 1);
+        }
+    }
+
+    function startAnimation() {
+        console.log("ad");
+        timer = setInterval(draw, 1000 / 20);
+    }
+
+    setTimeout(startAnimation, 5000);
+
+    draw();
+</script>
+
+</body>
+</html>

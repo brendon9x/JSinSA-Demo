@@ -1,0 +1,54 @@
+body {
+    background: black;
+    font-family: Futura,cursive;
+    font-style: italic;
+    font-weight: normal;
+    color: white;
+}
+
+.canvasContainer {
+    width: 640px;
+    height: 480px;
+    border: 1px solid gray;
+    background-color: #f5f5f5;
+    margin-top: 50px;
+}
+
+.main {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    width: 640px;
+}
+
+h1 {
+    text-align: center;
+}
+
+h3 {
+    text-align: center;
+    color: #aaa;
+    font-style: italic;
+}
+
+.black {
+    background-color: black;
+}
+
+a {
+    color: orange;
+}
+
+a.next {
+    text-decoration: none;
+    font-weight: bold;
+    color: white;
+    float: right        
+}
+
+a.prev {
+    text-decoration: none;
+    font-weight: bold;
+    color: white;
+    float: left;
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image manipulation demo</title>
+    <script src="javascripts/jquery-1.5.1.js"></script>
+    <script src="javascripts/raphael.js"></script>
+    <link rel="stylesheet" href="stylesheets/demo.css"/>
+</head>
+<body>
+
+<div class="main">
+    <h1>Image manipulation demo</h1>
+
+    <div id="canvas" class="canvasContainer black" style="border:none"></div>
+    <a class="next" href="canvas2d.html">Next</a>
+    <a class="prev" href="line.html">Prev</a>
+</div>
+
+<script type="text/javascript">
+
+    $(function() {
+        var data = [
+            {name: "Brendon McLean", src: "images/Brendon McLean.jpeg", w:100 , h:123},
+            {name: "Garren Smith", src: "images/Garren Smith.jpeg", w:100 , h:98},
+            {name: "Hendrik Louw", src: "images/Hendrik Louw.jpeg", w:100, h:121},
+            {name: "Jarrod Hermer", src: "images/Jarrod Hermer.jpeg", w:100, h:100},
+            {name: "Joshua Freislich", src: "images/Joshua Freislich.jpeg", w:100, h:115},
+            {name: "Marc Heiligers", src: "images/Marc Heiligers.jpeg", w:90, h:90},
+            {name: "Peter Munnings", src: "images/Peter Munnings.jpeg",w:94, h:92},
+            {name: "Sergey Ilinsky", src: "images/Sergey Ilinsky.jpeg",w:90,h:123},
+            {name: "Simon Stewart", src: "images/Simon Stewart.jpeg",w:100,h:94},
+            {name: "Tristan Bergh", src: "images/Tristan Bergh.jpeg",w:100, h:125}
+        ];
+
+        var canvas = Raphael("canvas", 640, 250);
+
+        var currentIndex = Math.floor(data.length / 2);
+
+        var pics = $.map(data, function(d, i) {
+            var x = 320 - d.w / 2, y = 125 - d.h / 2;
+            var set = canvas.set();
+            set.push(canvas.image(d.src, x, y, d.w, d.h));
+            set.click(function() {
+                currentIndex = i;
+                update(1000);
+            }).drag(function(dx, dy) {
+                set.rotate(Math.atan2(dy, dx) / Math.PI * 180, true);
+            });
+
+            return {
+                x: x, set: set, data: d
+            }
+        });
+
+        var label = canvas.text(320, 230, "Hello").attr({"font-size": 18, "fill": "#ccc"});
+
+        var update = function(time) {
+            $.each(pics, function(i, d) {
+                var delta = Math.abs(i - currentIndex);
+                var factor = Math.max(0, 1 - delta / 5);
+                var dist = pics[i].data.w + (25 + (25 * factor)) * (delta - 1);
+                if (i < currentIndex) {
+                    d.set.animate({opacity: factor, scale: [factor, factor], x: pics[i].x - dist}, time, "<>");
+                    d.set.toFront();
+                } else if (i > currentIndex) {
+                    d.set.animate({opacity: factor, scale: [factor, factor], x: pics[i].x + dist}, time, "<>");
+                    d.set.toBack();
+                } else {
+                    d.set.animate({opacity: 1, scale: [1, 1], x: pics[i].x }, time, "<>");
+                    label.attr({text: d.data.name});
+                 }
+
+            });
+        };
+
+        update(0);
+    });
+
+</script>
+
+</body>
+</html>

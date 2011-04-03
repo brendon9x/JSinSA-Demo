@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Line chart demo</title>
+    <script src="javascripts/jquery-1.5.1.js"></script>
+    <script src="javascripts/raphael.js"></script>
+    <script src="ZWDZAR_historical_data.js"></script>
+    <link rel="stylesheet" href="stylesheets/demo.css"/>
+</head>
+<body>
+
+<div class="main">
+    <h1>Line chart demo</h1>
+
+    <div id="canvas" class="canvasContainer black" style="border:none; height:500px"></div>
+    <a class="next" href="gallery.html">Next</a>
+    <a class="prev" href="bezier.html">Prev</a>
+</div>
+
+<script type="text/javascript">
+
+    $(function() {
+
+        var canvas = Raphael("canvas", 640, 500);
+
+        var marginX = 50;
+
+        var ViewModel = function(begin, end, resolution, x, y, width, height, topMargin, log) {
+            this.begin = begin;
+            this.end = end;
+            this.resolution = resolution > 0 ? resolution : 1;
+            this.topMargin = topMargin;
+
+            this.startDate = data[this.begin].date;
+            this.endDate = data[this.end - 1].date;
+
+            this.points = function() {
+                this.max = 0, this.min = Number.MAX_VALUE;
+                for (var i = this.begin; i < this.end; i += this.resolution) {
+                    this.max = Math.max(this.max, data[i].value);
+                    this.min = Math.min(this.min, data[i].value);
+                }
+
+                var array = [];
+                for (var i = this.begin; i < this.end; i += this.resolution) {
+                    var xValue = Math.round(x + ((i - this.begin) / (this.end - this.begin) * width));
+                    var yValue = log ?
+                            Math.round(y + height - (Math.log(data[i].value) / Math.log(this.max) * (height - topMargin))) :
+                            Math.round(y + height - data[i].value / this.max * (height - topMargin));
+                    array.push("" + xValue + " " + yValue);
+                }
+
+                return array;
+            };
+
+            this.openPathString = function() {
+                return "M" + this.points().join("L");
+            };
+            this.closedPathString = function() {
+                return this.openPathString() + "L" + [this.br, this.bl].join("L") + "Z";
+            };
+
+            this.br = "" + (x + width) + " " + (y + height);
+            this.bl = "" + (x) + " " + (y + height);
+        };
+
+        var overview = new ViewModel(0, data.length, Math.round(data.length / 540 * 3), marginX, 400, 540, 80, 10, true);
+        var overviewPathArea = canvas.path(overview.closedPathString()).attr({fill: "#3f72bf", "fill-opacity": 0.4});
+        var lineStroke = canvas.path(overview.openPathString()).attr({stroke: "#3f72bf", "stroke-opacity": 1, "stroke-width": 2});
+        var separator = canvas.path(["M", 50, 400, "L", 590, 400]).attr({fill: "none", stroke: "#ccc", "stroke-width": "1"});
+
+        canvas.text(320, 30, "ZWD/ZAR Exchange Rate").attr({
+            "font-size": "20", "font-weight": "bold", "fill": "#ccc"
+        });
+
+        var numElementsInDetail = Math.round(data.length / 10);
+        var offset = data.length - numElementsInDetail;
+
+        var detail = new ViewModel(offset, offset + numElementsInDetail, 1, marginX, 0, 540, 400, 80, false);
+
+        var detailPathString = "M" + detail.points().join("L");
+        var closedDetailPathString = detailPathString +
+                + "L" + detail.br
+                + "L" + detail.bl
+                + "Z";
+
+        var detailPathArea = canvas.path().attr({fill: "#3f72bf", "fill-opacity": 0.4});
+        var detailStroke = canvas.path().attr({stroke: "#3f72bf", "stroke-opacity": 1, "stroke-width": 2});
+        var border = canvas.rect(50, 0, 540, 480).attr({fill: "none", stroke: "#ccc", "stroke-width": "2", "stroke-opacity": 0.3});
+
+        var sliderModel = {
+            numElements: numElementsInDetail,
+            x: marginX + offset / data.length * 540,
+            y: 400 + 1,
+            height: 80 - 2,
+            width: numElementsInDetail / data.length * 540,
+            start: function() {
+                return Math.round((this.x - marginX) / 540 * data.length);
+            },
+            end: function() {
+                return this.start() + numElementsInDetail;
+            }
+        };
+
+        var vMaxAxis = canvas.text(45, detail.topMargin, "Top").attr({"fill": "white", "text-anchor": "end"});
+        var hMinAxis = canvas.text(50, 490, data[0].date.getFullYear()).attr({"fill": "white", "text-anchor": "start"});
+        var hMaxAxis = canvas.text(50 + 540, 490, data[data.length - 1].date.getFullYear()).attr({"fill": "white", "text-anchor": "end"});
+
+        var update = function() {
+            detailPathArea.attr({path: detail.closedPathString()});
+            detailStroke.attr({path: detail.openPathString()});
+            vMaxAxis.attr({"text": detail.max.toPrecision(3)});
+        };
+
+        var slider = canvas.rect(sliderModel.x, sliderModel.y, sliderModel.width, sliderModel.height).attr({
+            fill: "white",
+            "fill-opacity": 0.3,
+            stroke: "white",
+            "stroke-opacity": 0.6,
+            "stroke-width": 1
+        }).drag(function(dx, dy) {
+            sliderModel.x = Math.min(Math.max(marginX, this.startX + dx), marginX + 540 - sliderModel.width);
+            slider.attr({x: sliderModel.x});
+            detail.begin = sliderModel.start();
+            detail.end = sliderModel.end();
+            update();
+        }, function() {
+            this.startX = slider.attr("x");
+        });
+
+        update();
+    });
+
+</script>
+
+</body>
+</html>

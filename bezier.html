@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Beziers</title>
+    <script src="javascripts/jquery-1.5.1.js"></script>
+    <script src="javascripts/raphael.js"></script>
+    <link rel="stylesheet" href="stylesheets/demo.css"/>
+</head>
+<body>
+
+<div class="main">
+    <h1>Quadratic beziers in Action</h1>
+
+    <div id="canvas" class="canvasContainer"></div>
+    <a class="next" href="line.html">Next</a>
+    <a class="prev" href="bar3.html">Prev</a>
+</div>
+
+<script type="text/javascript">
+
+    $(function() {
+        var canvas = Raphael("canvas", 640, 480);
+
+        var a = {x: 120, y: 390};
+        var c = {x: 320, y: 90};
+        var b = {x: 520, y: 390};
+
+        // The bezier
+        canvas.path(["M", a.x, a.y, "Q", c.x, c.y, b.x, b.y]).attr({"stroke-width": "3px", "stroke": "#99f"});
+
+        var dashed = { stroke: "#666", "stroke-dasharray": "--"};
+
+        // The lines from the control points
+        var pathA = canvas.path(["M", a.x, a.y, "L", c.x, c.y]).attr(dashed).hide();
+        var pathB = canvas.path(["M", c.x, c.y, "L", b.x, b.y]).attr(dashed).hide();
+
+        // Point markers
+        var controlPoints = canvas.set();
+        $.each([a, b, c], function(i, point) {
+            controlPoints.push(canvas.circle(point.x, point.y, 8).attr({"stroke": "#4040ff", "stroke-width": "2px", fill: "#4060FF", "fill-opacity": 0.5}));
+        });
+        controlPoints.hide();
+
+        // Tangent
+        var tangent = canvas.path().attr({"stroke": "red", "stroke-width": 1});
+
+        // Tangent markers
+        var startPoint = canvas.circle(a.x, a.y, 7).attr({fill: "red", "fill-opacity": 0.5, "stroke": "red", "stroke-width": 1}).hide();
+        var endPoint = canvas.circle(c.x, c.y, 7).attr({fill: "red", "fill-opacity": 0.5, "stroke": "red", "stroke-width": 1}).hide();
+
+        startPoint.onAnimation(function() {
+            tangent.attr({"path": ["M", startPoint.attr("cx"), startPoint.attr("cy"), "L", endPoint.attr("cx"), endPoint.attr("cy")]});
+        });
+
+        var textAttr = { "stroke": "none", "fill": "#333", "font-size": 20, "font-weight": "bold" };
+
+        var showControlPoints = canvas.text(320, 440, "SHOW CONTROL POINTS").attr(textAttr);
+        var showPaths = canvas.text(320, 440, "SHOW PATHS").attr(textAttr).hide();
+        var animate = canvas.text(320, 440, "ANIMATE").attr(textAttr).hide();
+        var reset = canvas.text(320, 440, "RESET").attr(textAttr).hide();
+
+        showControlPoints.click(function() {
+            this.hide(); showPaths.show(); controlPoints.show();
+        });
+        showPaths.click(function() {
+            this.hide(); animate.show(); pathA.show(); pathB.show();
+        });
+        animate.click(function() {
+            this.hide(); reset.show(); startPoint.show(); endPoint.show(); tangent.show();
+            startPoint.attr({cx: a.x, cy: a.y}).animateAlong(pathA, 3000, false);
+            endPoint.attr({cx: c.x, cy: c.y}).animateAlong(pathB, 3000, false);
+        });
+        reset.click(function() {
+            this.hide(); startPoint.hide(); endPoint.hide(); tangent.hide(); controlPoints.hide(); pathA.hide(); pathB.hide();
+            showControlPoints.show();
+        })
+    });
+
+</script>
+
+</body>
+</html>

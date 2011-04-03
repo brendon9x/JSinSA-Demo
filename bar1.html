@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bar chart demo 1</title>
+    <script src="javascripts/jquery-1.5.1.js"></script>
+    <script src="javascripts/raphael.js"></script>
+    <link rel="stylesheet" href="stylesheets/demo.css"/>
+</head>
+<body>
+
+<div class="main">
+    <h1>Bar chart demo 1</h1>
+    <h3>The simple version</h3>
+
+    <div id="canvas" class="canvasContainer"></div>
+    <a class="next" href="bar2.html">Next</a>
+</div>
+
+<script type="text/javascript">
+
+    $(function() {
+        // Could get this from the server
+        var data = [
+            {lang: "SQL", count: 486},
+            {lang: "Web", count: 359},
+            {lang: "Java", count: 354},
+            {lang: "C#", count: 141},
+            {lang: "PHP",count: 87},
+            {lang: "Visual Basic",count: 37},
+            {lang: "C++", count: 33},
+            {lang: "Python", count: 26},
+            {lang: "Ruby", count: 16}
+        ];
+
+        var plotArea = {
+            x1: 40, y1: 60, x2: 600, y2: 440,
+            width: function() { return this.x2 - this.x1 },
+            height: function() { return this.y2 - this.y1 }
+        };
+
+        var gap = 15;
+        var bars = $.map(data, function(d, i) {
+            return {
+                width: function() { return (plotArea.width() / data.length) - gap },
+                height: function() { return d.count / 486 * plotArea.height() },
+                x: function() { return plotArea.x1 + gap + (this.width() + gap) * i },
+                y: function() { return plotArea.y2 - this.height() },
+                data: d
+            }
+        });
+
+        var canvas = Raphael("canvas", 640, 480);
+
+        $.each(bars, function(i, bar) {
+            var rect = canvas.rect(bar.x(), bar.y(), bar.width(), bar.height()).attr({
+                fill: "red", stroke: "none"
+            });
+        });
+    });
+
+</script>
+
+</body>
+</html>
